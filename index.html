@@ -17,7 +17,10 @@
 	<script src='./src/js/imgClip.js'></script>
 	<script>
 		var imgClip = new ImgClip({
-			source:'./src/img/2.jpg'
+			source:'./src/img/2.jpg',
+			cutEvent: function(e) {
+				alert(e)
+			}
 		})
 	</script>
 </body>

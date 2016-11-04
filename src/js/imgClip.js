@@ -1,4 +1,26 @@
  ;(function(global, AlloyFinger) {
+ 	var lastTime = 0;
+    var vendors = ['webkit', 'moz'];
+    for (var x = 0; x < vendors.length && !global.requestAnimationFrame; ++x) {
+        global.requestAnimationFrame = global[vendors[x] + 'RequestAnimationFrame'];
+        global.cancelAnimationFrame =
+            global[vendors[x] + 'CancelAnimationFrame'] || global[vendors[x] + 'CancelRequestAnimationFrame'];
+    }
+
+    if (!global.requestAnimationFrame)
+        global.requestAnimationFrame = function (callback) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = global.setTimeout(function () { callback(currTime + timeToCall); },
+                timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+
+    if (!global.cancelAnimationFrame)
+        global.cancelAnimationFrame = function (id) {
+            clearTimeout(id);
+        };
  	var ImgClip = function(options){
  		this.opt = options || {}
  		this.el = this.opt.el || document.body
@@ -11,6 +33,7 @@
  		this.cutPosition = null
  		this.img = null
  		this.angle = 0
+ 		this.moveTimer = null
  		this.imgSize = {
  			width: 0,
  			height: 0
@@ -31,12 +54,19 @@
 				left: 'Left',
 				right: 'Right'
 			}
-		this.scaleMin = this.cutRectSize
+		this.scaleMin = 0
 		this.scaleMax = 1
+		this.cutEvent = this.opt.cutEvent
+		this.isInit = true
  		this.init()
  	}
  	ImgClip.prototype = {
  		init: function() {
+ 			var _this = this,
+ 				cs = Math.min.call(null, [global.innerWidth, global.innerHeight]);
+ 			if(this.cutRectSize>cs)this.cutRectSize = cs;
+ 			this.scaleMin = this.cutRectSize
+ 			this.angle = 0
  			this.createContainer()
  			this.createCanvas()
  			this.createToolbar()
@@ -48,10 +78,27 @@
  				y: (this.canvas.height - this.cutRectSize - 50) / 2
  			}
  			this.bindEvent()
- 			this.renderImg()
+ 			this.renderImg() 
+ 			if(this.isInit){
+ 				global.addEventListener("onorientationchange" in global ? "orientationchange" : "resize", function() {
+					_this.resize()
+				}, false)
+				this.isInit = false
+ 			} 						
+ 		},
+ 		resize: function() {
+ 			var _this = this
+ 			setTimeout(function() {
+ 				_this.init()
+ 			}, 100)
  		},
  		createContainer: function() {
- 			var containerElement = document.createElement('div')
+ 			var containerElement = document.createElement('div'),
+ 				clipContainer = document.getElementById('clip_container');
+ 			containerElement.id = 'clip_container'
+ 			if(clipContainer){
+ 				clipContainer.parentNode.removeChild(clipContainer)
+ 			}
  			this.container = containerElement
  		},
  		createCanvas: function() {
@@ -118,6 +165,7 @@
  			this.toolbar = toolbarElement
  		},
  		destory: function() {
+ 			this.resize = null
  			this.container.parentNode.removeChild(this.container)
  		},
  		clearCanvas: function() {
@@ -151,12 +199,14 @@
 			this.imgSize.width = imgSize.width
 			this.imgSize.height = imgSize.height
 			this.context.save()
-			this.context.translate(global.innerWidth/2, (global.innerHeight-50)/2)
+			this.offset.x = global.innerWidth/2
+			this.offset.y = (global.innerHeight-50)/2
+			this.context.translate(this.offset.x, this.offset.y)
 			this.context.drawImage(this.img, -this.imgSize.width/2, -this.imgSize.height/2, this.imgSize.width, this.imgSize.height)
-			this.context.restore()
-			this.drawCutRect()
+			this.context.restore()			
 			this.imgPosition.x = (global.innerWidth-imgSize.width)/2
 			this.imgPosition.y = (global.innerHeight-imgSize.height-50)/2
+			this.drawCutRect()
  		},
  		drawImg: function() {
  			this.offset.x = this.imgPosition.x+this.imgSize.width/2
@@ -187,17 +237,18 @@
  				ctx = tempCanvas.getContext('2d');
  			tempCanvas.width = tempCanvas.height = this.cutRectSize;	
  			ctx.drawImage(this.canvas, this.cutPosition.x, this.cutPosition.y, this.cutRectSize, this.cutRectSize, 0, 0, this.cutRectSize, this.cutRectSize)
-			this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)	
-			this.source = tempCanvas
-			this.renderImg()
+			this.cutEvent && this.cutEvent(tempCanvas.toDataURL("image/png"))
  		},
  		rotateImg: function(direction) {
- 			if(this.DIRECTION.left===direction){
- 				this.angle -= 90*Math.PI/180
- 			}else{
- 				this.angle += 90*Math.PI/180
- 			} 		
- 			this.drawImg();				
+ 			if(this.moveTimer===null){
+ 				if(this.DIRECTION.left===direction){
+	 				this.angle -= 90*Math.PI/180
+	 			}else{
+	 				this.angle += 90*Math.PI/180
+	 			} 		
+	 			this.drawImg()		
+	 			this.dockImg()	
+ 			} 				
  		},
  		bindEvent: function(){
  			var _this = this;
@@ -224,70 +275,112 @@
                     evt.preventDefault();	
 				},
  				pressMove: function(evt) {
- 					_this.imgPosition.x += evt.deltaX
- 					_this.imgPosition.y += evt.deltaY
- 					_this.drawImg() 	
+ 					if(_this.moveTimer===null){
+	 					_this.imgPosition.x += evt.deltaX
+	 					_this.imgPosition.y += evt.deltaY
+	 					_this.drawImg() 	
+	 				}
                 },
-                pinch: function(evt) {      
-                	var scaleWidth = _this.scaleSize.width * evt.scale,
-                		scaleHeight = _this.scaleSize.height * evt.scale,
-                		temp = Math.min.apply(null, [scaleWidth, scaleHeight]);	 
-                	if(temp<_this.scaleMax && temp > _this.scaleMin) {
-                		_this.imgPosition.x += (_this.imgSize.width - scaleWidth) / 2;
-						_this.imgPosition.y += (_this.imgSize.height - scaleHeight) /2;
-						_this.imgSize.width = scaleWidth;
-						_this.imgSize.height = scaleHeight;
-						_this.drawImg()
-                	}              		
-					
+                pinch: function(evt) {     
+                	if(_this.moveTimer===null){
+                		var scaleWidth = _this.scaleSize.width * evt.scale,
+	                		scaleHeight = _this.scaleSize.height * evt.scale,
+	                		temp = Math.min.apply(null, [scaleWidth, scaleHeight]);	 
+	                	if(temp<_this.scaleMax && temp > _this.scaleMin) {
+	                		_this.imgPosition.x += (_this.imgSize.width - scaleWidth) / 2;
+							_this.imgPosition.y += (_this.imgSize.height - scaleHeight) /2;
+							_this.imgSize.width = scaleWidth;
+							_this.imgSize.height = scaleHeight;
+							_this.drawImg()
+	                	}
+                	} 
                 },
                 touchEnd: function(evt) {
-                	_this.scaleSize.width = _this.imgSize.width
-                	_this.scaleSize.height = _this.imgSize.height
-                	_this.dockImg()
+                	if(_this.moveTimer===null){
+                		_this.scaleSize.width = _this.imgSize.width
+	                	_this.scaleSize.height = _this.imgSize.height
+	                	_this.dockImg()
+                	}                	
                 }
  			})
  		},
+ 		//校正图片位置，保证不会脱离剪切框
  		dockImg: function() {
- 			this.context.beginPath()
- 			this.context.arc(this.cutPosition.x+this.cutRectSize/2,this.cutPosition.y+this.cutRectSize/2,5,0,Math.PI*180,false) 			
- 			this.context.fillStyle = 'red'
-			this.context.fill()
-			this.context.beginPath()
-			this.context.arc(this.offset.x,this.offset.y,5,0,Math.PI*180,false)
-			this.context.fillStyle = 'green'
-			this.context.fill()
 			var x = this.cutPosition.x, 
 				y = this.cutPosition.y, 
-				ox = this.offset.x, 
-				oy = this.offset.y, 
 				w = this.imgSize.width, 
 				h = this.imgSize.height,
-				dx, dy;
-			dx = ox-x-w/2	
-			dy = oy-y-h/2		
-			// if(this.angle/90*Math.PI/180%2!==0){
-			// 	dx = ox-x-h/2	
-			// 	dy = oy-y-w/2
-			// }
-			
-			
-			// if(dx > 0 && dy > 0){
-			// 	this.imgPosition.x -= dx
-			// 	this.imgPosition.y -= dy
-			// }else if(dx > 0 && dy < 0){
-			// 	this.imgPosition.x -= dx
-			// }else if(dx < 0 && dy > 0){
-			// 	this.imgPosition.y -= dy				
-			// }
-			
-			// this.drawImg()
-			document.getElementById('log').innerHTML = 'cut: '+x+' X '+y 
-											                	+'<br> offset: '+ox+' X '+oy
-											                	+'<br> imgSize: '+w+' X '+h
-											                	+'<br> dock: '+dx+' X '+dy
-											                	+'<br> imgPosition: '+this.imgPosition.x+' X '+this.imgPosition.y
-
+				ox = this.offset.x,
+				oy = this.offset.y,
+				dx, dy, ax, ay, isRotate = false,
+				ix = this.imgPosition.x,
+				iy = this.imgPosition.y,
+				px = ix,
+				py = iy,
+				cr = this.cutRectSize/2,
+				dock = {
+					top: 0,
+					right: 0,
+					bottom: 0,
+					left: 0
+				};
+			ax = w/2 - cr
+			ay = h/2 - cr	
+			//图片旋转横竖时交换坐标
+			if(this.angle/(90*Math.PI/180)%2!==0){
+				ay = w/2 - cr
+				ax = h/2 - cr	
+			}	
+			dx = x + cr
+			dy = y + cr
+			//计算图片各边不会脱离剪切框的坐标范围
+			dock.top = dy - ay
+			dock.right = dx + ax
+			dock.bottom = dy + ay
+			dock.left = dx - ax
+			//判断纵坐标是否脱离范围
+			if(oy < dock.top){
+				py = dock.top - h/2
+			}else if(oy > dock.bottom){
+				py = dock.bottom - h/2
+			}
+			//判断横坐标是否脱离范围
+			if(ox > dock.right){
+				px = dock.right - w/2
+			}else if(ox < dock.left){
+				px = dock.left - w/2
+			}
+			this.moveImg(ix, iy, px, py)
+ 		},
+ 		moveImg: function(x, y, tx, ty) {
+ 			var _x = tx-x,
+ 				_y = ty-y,
+ 				_this = this,
+ 				m = 1,
+ 				d = 16,
+ 				p = 1;
+ 			var move = function() {
+ 				if(x > tx && _this.imgPosition.x < tx || x < tx && _this.imgPosition.x > tx) {
+					_this.imgPosition.x = tx 			
+ 				}
+ 				if(y > ty && _this.imgPosition.y < ty || y < ty && _this.imgPosition.y > ty) {
+ 					_this.imgPosition.y = ty 		
+ 				}
+ 				if(_this.imgPosition.x == tx && _this.imgPosition.y == ty) {
+ 					console.log('fuck')
+ 					_this.drawImg()
+ 					cancelAnimationFrame(_this.moveTimer)
+ 					_this.moveTimer = null
+ 					return;
+ 				}
+ 				p = _this.easeOut(m/d)
+ 				m++;
+ 				_this.imgPosition.x = x + p * _x
+ 				_this.imgPosition.y = y + p * _y
+ 				_this.drawImg()
+ 				_this.moveTimer = requestAnimationFrame(move)
+ 			}
+ 			move()
  		},
  		getImgRenderSize: function(imgObj) {
 			var imgWidth = imgObj.width,
@@ -306,10 +399,8 @@
 				height:imgHeight
 			}
 		},
-		reverse: function(numA, numB) {
-			numA = numA + numB
-			numB = numA - numB
-			numA = numA - numB
+		easeOut: function(p) {
+			return 1-Math.pow(1-p,2)
 		}
  	}
  	global.ImgClip = ImgClip
