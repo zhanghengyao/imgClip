@@ -21,7 +21,7 @@
         global.cancelAnimationFrame = function (id) {
             clearTimeout(id);
         };
- 	var ImgClip = function(options){
+ 	var ImgClip = function(options) {
  		this.opt = options || {}
  		this.el = this.opt.el || document.body
  		this.canvas = null
@@ -176,9 +176,9 @@
  		renderImg: function(x, y) {
  			var _this = this;
  			if(!this.source)
- 				throw 'source is null';
+ 				throw 'no source';
  			this.clearCanvas()
-			if(typeof this.source === 'string'){
+			if(typeof this.source === 'string') {
  				this.img = document.createElement('img')
  				this.img.src = this.source 	
  				this.img.onload = function() { 	
@@ -191,7 +191,7 @@
  				throw 'source type error';
  			}
  		},
- 		initRenderImg: function(img){
+ 		initRenderImg: function(img) {
  			var imgSize = this.getImgRenderSize(img)
  			this.scaleSize.width = img.width
  			this.scaleSize.height = img.height
@@ -199,23 +199,23 @@
 			this.imgSize.width = imgSize.width
 			this.imgSize.height = imgSize.height
 			this.context.save()
-			this.offset.x = global.innerWidth/2
-			this.offset.y = (global.innerHeight-50)/2
+			this.offset.x = global.innerWidth / 2
+			this.offset.y = (global.innerHeight - 50) / 2
 			this.context.translate(this.offset.x, this.offset.y)
-			this.context.drawImage(this.img, -this.imgSize.width/2, -this.imgSize.height/2, this.imgSize.width, this.imgSize.height)
+			this.context.drawImage(this.img, -this.imgSize.width / 2, -this.imgSize.height / 2, this.imgSize.width, this.imgSize.height)
 			this.context.restore()			
-			this.imgPosition.x = (global.innerWidth-imgSize.width)/2
-			this.imgPosition.y = (global.innerHeight-imgSize.height-50)/2
+			this.imgPosition.x = (global.innerWidth-imgSize.width) / 2
+			this.imgPosition.y = (global.innerHeight - imgSize.height - 50 ) / 2
 			this.drawCutRect()
  		},
  		drawImg: function() {
- 			this.offset.x = this.imgPosition.x+this.imgSize.width/2
- 			this.offset.y = this.imgPosition.y+this.imgSize.height/2
+ 			this.offset.x = this.imgPosition.x+this.imgSize.width / 2
+ 			this.offset.y = this.imgPosition.y+this.imgSize.height / 2
  			this.clearCanvas()
  			this.context.save()
  			this.context.translate(this.offset.x, this.offset.y) 		
  			this.context.rotate(this.angle);
-			this.context.drawImage(this.img, -this.imgSize.width/2, -this.imgSize.height/2, this.imgSize.width, this.imgSize.height)
+			this.context.drawImage(this.img, -this.imgSize.width / 2, -this.imgSize.height / 2, this.imgSize.width, this.imgSize.height)
 			this.context.restore()
 			this.drawCutRect()
  		},
@@ -223,9 +223,9 @@
 			this.context.beginPath()
  			this.context.rect(0, 0, this.canvas.width, this.canvas.height)	 			
  			this.context.moveTo(this.cutPosition.x, this.cutPosition.y)
- 			this.context.lineTo(this.cutPosition.x, this.cutPosition.y+this.cutRectSize)
- 			this.context.lineTo(this.cutPosition.x+this.cutRectSize, this.cutPosition.y+this.cutRectSize)
- 			this.context.lineTo(this.cutPosition.x+this.cutRectSize, this.cutPosition.y)
+ 			this.context.lineTo(this.cutPosition.x, this.cutPosition.y + this.cutRectSize)
+ 			this.context.lineTo(this.cutPosition.x + this.cutRectSize, this.cutPosition.y + this.cutRectSize)
+ 			this.context.lineTo(this.cutPosition.x + this.cutRectSize, this.cutPosition.y)
  			this.context.closePath()
  			this.context.fillStyle = 'rgba(0,0,0,0.5)'
 			this.context.fill()
@@ -240,17 +240,17 @@
 			this.cutEvent && this.cutEvent(tempCanvas.toDataURL("image/png"))
  		},
  		rotateImg: function(direction) {
- 			if(this.moveTimer===null){
- 				if(this.DIRECTION.left===direction){
-	 				this.angle -= 90*Math.PI/180
+ 			if(this.moveTimer === null) {
+ 				if(this.DIRECTION.left === direction) {
+	 				this.angle -= 90 * Math.PI / 180
 	 			}else{
-	 				this.angle += 90*Math.PI/180
+	 				this.angle += 90 * Math.PI / 180
 	 			} 		
 	 			this.drawImg()		
 	 			this.dockImg()	
  			} 				
  		},
- 		bindEvent: function(){
+ 		bindEvent: function() {
  			var _this = this;
  			new AlloyFinger(_this.toolbar, {
  				singleTap: function(evt) {
@@ -275,14 +275,14 @@
                     evt.preventDefault();	
 				},
  				pressMove: function(evt) {
- 					if(_this.moveTimer===null){
+ 					if(_this.moveTimer===null) {
 	 					_this.imgPosition.x += evt.deltaX
 	 					_this.imgPosition.y += evt.deltaY
 	 					_this.drawImg() 	
 	 				}
                 },
                 pinch: function(evt) {     
-                	if(_this.moveTimer===null){
+                	if(_this.moveTimer===null) {
                 		var scaleWidth = _this.scaleSize.width * evt.scale,
 	                		scaleHeight = _this.scaleSize.height * evt.scale,
 	                		temp = Math.min.apply(null, [scaleWidth, scaleHeight]);	 
@@ -317,19 +317,19 @@
 				iy = this.imgPosition.y,
 				px = ix,
 				py = iy,
-				cr = this.cutRectSize/2,
+				cr = this.cutRectSize / 2,
 				dock = {
 					top: 0,
 					right: 0,
 					bottom: 0,
 					left: 0
 				};
-			ax = w/2 - cr
-			ay = h/2 - cr	
+			ax = w / 2 - cr
+			ay = h / 2 - cr	
 			//图片旋转横竖时交换坐标
-			if(this.angle/(90*Math.PI/180)%2!==0){
-				ay = w/2 - cr
-				ax = h/2 - cr	
+			if(this.angle / (90 * Math.PI / 180) % 2 !== 0) {
+				ay = w / 2 - cr
+				ax = h / 2 - cr	
 			}	
 			dx = x + cr
 			dy = y + cr
@@ -339,22 +339,22 @@
 			dock.bottom = dy + ay
 			dock.left = dx - ax
 			//判断纵坐标是否脱离范围
-			if(oy < dock.top){
-				py = dock.top - h/2
+			if(oy < dock.top) {
+				py = dock.top - h / 2
 			}else if(oy > dock.bottom){
-				py = dock.bottom - h/2
+				py = dock.bottom - h / 2
 			}
 			//判断横坐标是否脱离范围
-			if(ox > dock.right){
-				px = dock.right - w/2
-			}else if(ox < dock.left){
-				px = dock.left - w/2
+			if(ox > dock.right) {
+				px = dock.right - w / 2
+			}else if(ox < dock.left) {
+				px = dock.left - w / 2
 			}
 			this.moveImg(ix, iy, px, py)
  		},
  		moveImg: function(x, y, tx, ty) {
- 			var _x = tx-x,
- 				_y = ty-y,
+ 			var _x = tx - x,
+ 				_y = ty - y,
  				_this = this,
  				m = 1,
  				d = 16,
@@ -366,7 +366,7 @@
  				if(y > ty && _this.imgPosition.y < ty || y < ty && _this.imgPosition.y > ty) {
  					_this.imgPosition.y = ty 		
  				}
- 				if(_this.imgPosition.x == tx && _this.imgPosition.y == ty) {
+ 				if(_this.imgPosition.x === tx && _this.imgPosition.y === ty) {
  					console.log('fuck')
  					_this.drawImg()
  					cancelAnimationFrame(_this.moveTimer)
@@ -387,10 +387,10 @@
 			  	imgHeight = imgObj.height,
 			  	clientWidth = global.innerWidth,
 				clientHeight = global.innerHeight,				
-			 	rateWidth = clientWidth/imgWidth,
-			 	rateHeight = clientHeight/imgHeight,
+			 	rateWidth = clientWidth / imgWidth,
+			 	rateHeight = clientHeight / imgHeight,
 			 	rate = rateWidth < rateHeight ? rateWidth : rateHeight;
-			if(rate<1) {
+			if(rate < 1) {
 				imgWidth = imgWidth * rate
 				imgHeight = imgHeight * rate
 			}
@@ -400,7 +400,7 @@
 			}
 		},
 		easeOut: function(p) {
-			return 1-Math.pow(1-p,2)
+			return 1 - Math.pow(1 - p, 2)
 		}
  	}
  	global.ImgClip = ImgClip
