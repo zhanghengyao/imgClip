@@ -65,7 +65,8 @@
  		init: function() {
  			var _this = this,
  				cs = Math.min.call(null, [global.innerWidth, global.innerHeight]);
- 			if(this.cutRectSize>cs)this.cutRectSize = cs;
+ 			if(this.cutRectSize > cs)this.cutRectSize = cs;
+ 			if(this.cutRectSize < 50)this.cutRectSize = 50
  			this.scaleMin = this.cutRectSize
  			this.angle = 0
  			if(typeof this.opt.el === 'string'){
