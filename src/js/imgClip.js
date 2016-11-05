@@ -57,6 +57,7 @@
 		this.scaleMin = 0
 		this.scaleMax = 1
 		this.cutEvent = this.opt.cutEvent
+		this.closeEvent = this.opt.closeEvent
 		this.isInit = true
  		this.init()
  	}
@@ -80,9 +81,7 @@
  			this.bindEvent()
  			this.renderImg() 
  			if(this.isInit){
- 				global.addEventListener("onorientationchange" in global ? "orientationchange" : "resize", function() {
-					_this.resize()
-				}, false)
+ 				global.addEventListener('orientationchange', _this.resize.bind(_this), false)
 				this.isInit = false
  			} 						
  		},
@@ -91,6 +90,7 @@
  			setTimeout(function() {
  				_this.init()
  			}, 100)
+ 			this.log('resize: '+global.orientation)
  		},
  		createContainer: function() {
  			var containerElement = document.createElement('div'),
@@ -163,17 +163,13 @@
  			toolbarElement.appendChild(box4)
 
  			this.toolbar = toolbarElement
- 		},
- 		destory: function() {
- 			this.resize = null
- 			this.container.parentNode.removeChild(this.container)
- 		},
+ 		}, 		
  		clearCanvas: function() {
  			this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
  			this.context.fillStyle = '#000';
 			this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
  		},
- 		renderImg: function(x, y) {
+ 		renderImg: function() {
  			var _this = this;
  			if(!this.source)
  				throw 'no source';
@@ -218,6 +214,7 @@
 			this.context.drawImage(this.img, -this.imgSize.width / 2, -this.imgSize.height / 2, this.imgSize.width, this.imgSize.height)
 			this.context.restore()
 			this.drawCutRect()
+			return this;
  		},
  		drawCutRect: function() {
 			this.context.beginPath()
@@ -246,8 +243,7 @@
 	 			}else{
 	 				this.angle += 90 * Math.PI / 180
 	 			} 		
-	 			this.drawImg()		
-	 			this.dockImg()	
+	 			this.drawImg().dockImg()		
  			} 				
  		},
  		bindEvent: function() {
@@ -368,19 +364,23 @@
  				}
  				if(_this.imgPosition.x === tx && _this.imgPosition.y === ty) {
  					console.log('fuck')
- 					_this.drawImg()
  					cancelAnimationFrame(_this.moveTimer)
- 					_this.moveTimer = null
+ 					_this.drawImg().moveTimer = null 					
  					return;
  				}
  				p = _this.easeOut(m/d)
  				m++;
  				_this.imgPosition.x = x + p * _x
  				_this.imgPosition.y = y + p * _y
- 				_this.drawImg()
- 				_this.moveTimer = requestAnimationFrame(move)
+ 				_this.drawImg().moveTimer = requestAnimationFrame(move)
  			}
  			move()
+ 		},
+ 		destory: function() {
+ 			var _this = this
+ 			this.closeEvent && this.closeEvent() 
+ 			global.removeEventListener('orientationchange', _this.resize, false)
+ 			this.container.parentNode.removeChild(this.container)
  		},
  		getImgRenderSize: function(imgObj) {
 			var imgWidth = imgObj.width,
@@ -401,6 +401,9 @@
 		},
 		easeOut: function(p) {
 			return 1 - Math.pow(1 - p, 2)
+		},
+		log: function(log) {
+			document.getElementById('log').innerHTML = log
 		}
  	}
  	global.ImgClip = ImgClip

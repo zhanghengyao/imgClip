@@ -19,7 +19,13 @@
 		var imgClip = new ImgClip({
 			source:'./src/img/2.jpg',
 			cutEvent: function(e) {
-				alert(e)
+				var img = document.createElement('img')
+				img.src = e
+				this.source = img
+				this.renderImg()
+			},
+			closeEvent: function() {
+				alert('关闭')
 			}
 		})
 	</script>
