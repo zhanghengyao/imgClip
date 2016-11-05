@@ -23,7 +23,7 @@
         };
  	var ImgClip = function(options) {
  		this.opt = options || {}
- 		this.el = this.opt.el || document.body
+ 		this.el = null
  		this.canvas = null
  		this.context = null
  		this.container = null
@@ -68,6 +68,11 @@
  			if(this.cutRectSize>cs)this.cutRectSize = cs;
  			this.scaleMin = this.cutRectSize
  			this.angle = 0
+ 			if(typeof this.opt.el === 'string'){
+ 				this.el = document.getElementById(this.opt.el) || document.querySelector(this.opt.el) || document.body
+ 			}else{
+ 				this.el = this.opt.el || document.body
+ 			}
  			this.createContainer()
  			this.createCanvas()
  			this.createToolbar()

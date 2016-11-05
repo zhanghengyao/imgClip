@@ -13,16 +13,17 @@
 </head>
 <body>
 <p id="log" style="color: #fff; position: absolute; left: 0; top: 15px; width: 100%; line-height: 14px; font-size: 14px; word-break: break-all;"></p>
+<div id='clip_el'></div>
 	<script src='./src/js/alloy_finger.js'></script>
 	<script src='./src/js/imgClip.js'></script>
 	<script>
-		var imgClip = new ImgClip({
-			source:'./src/img/2.jpg',
+		new ImgClip({
+			el: 'clip_el',
+			source:'./src/img/6.jpg',
 			cutEvent: function(e) {
 				var img = document.createElement('img')
 				img.src = e
-				this.source = img
-				this.renderImg()
+				this.el.appendChild(img)
 			},
 			closeEvent: function() {
 				alert('关闭')

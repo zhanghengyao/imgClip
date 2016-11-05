@@ -8,7 +8,8 @@ var http = require('http'),
 		jpg: {'Content-Type': 'text/jpg'},
 		png: {'Content-Type': 'text/png'},
 		gif: {'Content-Type': 'text/gif'}
-	};
+	},
+	port = 2333;
 
 http.createServer(function(req, res){
 	var path_name = url.parse(req.url).pathname,key;
@@ -19,12 +20,16 @@ http.createServer(function(req, res){
 	}else{
 		if(path_name == '/'){
 			responseResource('./index.html', res, CONTENT_TYPE['html'])
-		}else{
-			responseResource('./example' + path_name + '/index.html', res, CONTENT_TYPE['html'])
 		}
 	}
 	
-}).listen('2333')
+}).listen(port,function (err) {
+  if (err) {
+    console.log(err)
+    return
+  }
+  console.log('Listening at http://localhost:' + port + '\n')
+})
 
 function responseResource(url, res, content_type){
 	fs.readFile(url, function(err, data){
