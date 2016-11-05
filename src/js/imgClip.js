@@ -410,9 +410,11 @@
 			return 1 - Math.pow(1 - p, 2)
 		},
 		log: function() {
-			document.getElementById('log').innerHTML = 'orientation: ' + global.orientation
-														+'<br/>scale: ' + this.imgSize.width/this.img.width
-														+'<br/>rotate: ' + this.angle
+			this.context.font = '14px verdana'
+			this.context.fillStyle = '#FFF'
+			this.context.fillText('orientation: ' + global.orientation, 10, 20)
+			this.context.fillText('scale: ' + this.imgSize.width/this.img.width, 10, 36)
+			this.context.fillText('rotate: ' + this.angle, 10, 52)			
 		}
  	}
  	global.ImgClip = ImgClip
