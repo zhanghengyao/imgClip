@@ -1,6 +1,6 @@
 # imgClip
 移动端图片剪裁<br/><br/>
-![demo](https://zhanghengyao.github.io/imgClip/src/img/demo.jpg =200x"")
+![demo](https://zhanghengyao.github.io/imgClip/src/img/demo.jpg =400x400)
 ----------
 # demo
 请用手机扫描查看<br/><br/>
