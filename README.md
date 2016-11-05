@@ -5,10 +5,10 @@
 ----------
 # demo
 请用手机扫描查看<br/><br/>
-![clip demo](https://zhanghengyao.github.io/imgClip/src/img/qrcode.jpg)
+![clip demo](https://zhanghengyao.github.io/imgClip/src/img/qrcode.png)
 
 # example
-``` 
+``` javascript
 new ImgClip({
 			el: 'clip_el',
 			source:'./src/img/6.jpg',
