@@ -1,7 +1,6 @@
 # imgClip
 移动端图片剪裁<br/><br/>
-![clip demo](https://zhanghengyao.github.io/imgClip/src/img/demo.jpg)
-
+<img src="https://zhanghengyao.github.io/imgClip/src/img/demo.jpg" style="width:50%" />
 ----------
 # demo
 请用手机扫描查看<br/><br/>
@@ -15,6 +14,7 @@ new ImgClip({
 			cutEvent: function(e) {
 				var img = document.createElement('img')
 				img.src = e
+				this.el.innerHTML = ''
 				this.el.appendChild(img)
 			},
 			closeEvent: function() {

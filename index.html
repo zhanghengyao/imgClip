@@ -23,6 +23,7 @@
 			cutEvent: function(e) {
 				var img = document.createElement('img')
 				img.src = e
+				this.el.innerHTML = ''
 				this.el.appendChild(img)
 			},
 			closeEvent: function() {
