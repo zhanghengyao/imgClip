@@ -96,7 +96,6 @@
  			setTimeout(function() {
  				_this.init()
  			}, 100)
- 			this.log('resize: '+global.orientation)
  		},
  		createContainer: function() {
  			var containerElement = document.createElement('div'),
@@ -220,6 +219,7 @@
 			this.context.drawImage(this.img, -this.imgSize.width / 2, -this.imgSize.height / 2, this.imgSize.width, this.imgSize.height)
 			this.context.restore()
 			this.drawCutRect()
+			this.log()
 			return this;
  		},
  		drawCutRect: function() {
@@ -386,6 +386,7 @@
  			var _this = this
  			this.closeEvent && this.closeEvent() 
  			global.removeEventListener('orientationchange', _this.resize, false)
+ 			this.resize = null
  			this.container.parentNode.removeChild(this.container)
  		},
  		getImgRenderSize: function(imgObj) {
@@ -408,8 +409,10 @@
 		easeOut: function(p) {
 			return 1 - Math.pow(1 - p, 2)
 		},
-		log: function(log) {
-			document.getElementById('log').innerHTML = log
+		log: function() {
+			document.getElementById('log').innerHTML = 'orientation: ' + global.orientation
+														+'<br/>scale: ' + this.imgSize.width/this.img.width
+														+'<br/>rotate: ' + this.angle
 		}
  	}
  	global.ImgClip = ImgClip
