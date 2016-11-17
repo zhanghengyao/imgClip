@@ -58,6 +58,7 @@
 		this.scaleMax = 1
 		this.cutEvent = this.opt.cutEvent
 		this.closeEvent = this.opt.closeEvent
+		this._resize = this.resize.bind(this)
 		this.isInit = true
  		this.init()
  	}
@@ -87,8 +88,7 @@
  			this.renderImg()  								
  		},
  		resize: function() {
- 			var _this = this
- 			setTimeout(_this.init.bind(_this), 100)
+ 			setTimeout(this.init.bind(this), 100)
  		},
  		createContainer: function() {
  			var containerElement = document.createElement('div'),
@@ -249,7 +249,7 @@
  		},
  		bindEvent: function() {
  			var _this = this;
- 			global.addEventListener('orientationchange', this.resize, false)
+ 			global.addEventListener('orientationchange', this._resize, false)
  			new AlloyFinger(_this.toolbar, {
  				singleTap: function(evt) {
  					switch(evt.target.getAttribute('data-box')) {
@@ -380,7 +380,7 @@
  		},
  		destory: function() {
  			this.closeEvent && this.closeEvent(); 
-			global.removeEventListener('orientationchange', this.resize, false) 
+			global.removeEventListener('orientationchange', this._resize, false) 
  			this.container.parentNode.removeChild(this.container)
  		},
  		getImgRenderSize: function(imgObj) {
