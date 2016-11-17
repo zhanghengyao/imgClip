@@ -63,8 +63,7 @@
  	}
  	ImgClip.prototype = {
  		init: function() {
- 			var _this = this,
- 				cs = Math.min.call(null, [global.innerWidth, global.innerHeight]);
+ 			var cs = Math.min.call(null, [global.innerWidth, global.innerHeight]);
  			if(this.cutRectSize > cs)this.cutRectSize = cs;
  			if(this.cutRectSize < 50)this.cutRectSize = 50
  			this.scaleMin = this.cutRectSize
@@ -83,19 +82,13 @@
  			this.cutPosition = {
  				x: (this.canvas.width - this.cutRectSize) / 2,
  				y: (this.canvas.height - this.cutRectSize - 50) / 2
- 			}
- 			this.bindEvent()
- 			this.renderImg() 
- 			if(this.isInit){
- 				global.addEventListener('orientationchange', _this.resize.bind(_this), false)
-				this.isInit = false
- 			} 						
+ 			} 
+			this.bindEvent()			
+ 			this.renderImg()  								
  		},
  		resize: function() {
  			var _this = this
- 			setTimeout(function() {
- 				_this.init()
- 			}, 100)
+ 			setTimeout(_this.init.bind(_this), 100)
  		},
  		createContainer: function() {
  			var containerElement = document.createElement('div'),
@@ -181,6 +174,8 @@
  			this.clearCanvas()
 			if(typeof this.source === 'string') {
  				this.img = document.createElement('img')
+ 				//图片跨域时需要服务器设置允许跨域，否则从canvas获取图片数据时会引发security_err
+ 				this.img.setAttribute('crossOrigin', 'anonymous');
  				this.img.src = this.source 	
  				this.img.onload = function() { 	
 	 				_this.initRenderImg(this)
@@ -219,7 +214,7 @@
 			this.context.drawImage(this.img, -this.imgSize.width / 2, -this.imgSize.height / 2, this.imgSize.width, this.imgSize.height)
 			this.context.restore()
 			this.drawCutRect()
-			this.log()
+			// this.log()
 			return this;
  		},
  		drawCutRect: function() {
@@ -254,11 +249,12 @@
  		},
  		bindEvent: function() {
  			var _this = this;
+ 			global.addEventListener('orientationchange', this.resize, false)
  			new AlloyFinger(_this.toolbar, {
  				singleTap: function(evt) {
  					switch(evt.target.getAttribute('data-box')) {
  						case '_box1_': 
- 							_this.destory()
+ 							_this.destory.call(_this)
  							break;
  						case '_box2_':
  							_this.rotateImg(_this.DIRECTION.left)
@@ -383,10 +379,8 @@
  			move()
  		},
  		destory: function() {
- 			var _this = this
- 			this.closeEvent && this.closeEvent() 
- 			global.removeEventListener('orientationchange', _this.resize, false)
- 			this.resize = null
+ 			this.closeEvent && this.closeEvent(); 
+			global.removeEventListener('orientationchange', this.resize, false) 
  			this.container.parentNode.removeChild(this.container)
  		},
  		getImgRenderSize: function(imgObj) {

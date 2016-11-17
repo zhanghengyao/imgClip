@@ -17,8 +17,9 @@
 	<script src='./src/js/imgClip.js'></script>
 	<script>
 		new ImgClip({
-			el: 'clip_el',
-			source:'./src/img/6.jpg',
+			el: 'clip_el',			
+			// source: './src/img/6.jpg',
+			source: 'http://www.cume.cc/website/images/banner/banner-2-1.png',
 			cutEvent: function(e) {
 				var img = document.createElement('img')
 				img.src = e
@@ -26,9 +27,9 @@
 				this.el.appendChild(img)
 			},
 			closeEvent: function() {
-				alert('关闭')
+				// alert('关闭')
 			}
-		})
+		})		
 	</script>
 </body>
 </html>
