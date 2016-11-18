@@ -34,6 +34,11 @@
  		this.img = null
  		this.angle = 0
  		this.moveTimer = null
+ 		this.orientation = global.orientation
+ 		this.deviceSize = {
+ 			width: global.innerWidth,
+ 			height: global.innerHeight
+ 		}
  		this.imgSize = {
  			width: 0,
  			height: 0
@@ -64,13 +69,14 @@
  	}
  	ImgClip.prototype = {
  		init: function() {
- 			var cs = Math.min.call(null, [global.innerWidth, global.innerHeight]);
+ 			var cs = Math.min.apply(null, [this.deviceSize.width, this.deviceSize.height]);
  			if(this.cutRectSize > cs)this.cutRectSize = cs;
  			if(this.cutRectSize < 50)this.cutRectSize = 50
  			this.scaleMin = this.cutRectSize
  			this.angle = 0
  			if(typeof this.opt.el === 'string'){
- 				this.el = document.getElementById(this.opt.el) || document.querySelector(this.opt.el) || document.body
+ 				this.el = document.getElementById(this.opt.el) || document.querySelector(this.opt.el)
+ 				if(!this.el)throw 'not found element';
  			}else{
  				this.el = this.opt.el || document.body
  			}
@@ -88,7 +94,12 @@
  			this.renderImg()  								
  		},
  		resize: function() {
- 			setTimeout(this.init.bind(this), 100)
+ 			if(this.orientation != global.orientation){ 				
+ 				this.orientation = global.orientation
+ 				this.deviceSize.width = global.innerWidth
+ 				this.deviceSize.height = global.innerHeight
+ 				this.init()
+ 			}
  		},
  		createContainer: function() {
  			var containerElement = document.createElement('div'),
@@ -101,8 +112,8 @@
  		},
  		createCanvas: function() {
  			var canvasElement = document.createElement('canvas')
- 			canvasElement.width = global.innerWidth
- 			canvasElement.height = global.innerHeight
+ 			canvasElement.width = this.deviceSize.width
+ 			canvasElement.height = this.deviceSize.height
  			this.context = canvasElement.getContext('2d')
  			this.canvas = canvasElement
  		},
@@ -195,13 +206,13 @@
 			this.imgSize.width = imgSize.width
 			this.imgSize.height = imgSize.height
 			this.context.save()
-			this.offset.x = global.innerWidth / 2
-			this.offset.y = (global.innerHeight - 50) / 2
+			this.offset.x = this.deviceSize.width / 2
+			this.offset.y = (this.deviceSize.height - 50) / 2
 			this.context.translate(this.offset.x, this.offset.y)
 			this.context.drawImage(this.img, -this.imgSize.width / 2, -this.imgSize.height / 2, this.imgSize.width, this.imgSize.height)
 			this.context.restore()			
-			this.imgPosition.x = (global.innerWidth-imgSize.width) / 2
-			this.imgPosition.y = (global.innerHeight - imgSize.height - 50 ) / 2
+			this.imgPosition.x = (this.deviceSize.width-imgSize.width) / 2
+			this.imgPosition.y = (this.deviceSize.height - imgSize.height - 50 ) / 2
 			this.drawCutRect()
  		},
  		drawImg: function() {
@@ -386,8 +397,8 @@
  		getImgRenderSize: function(imgObj) {
 			var imgWidth = imgObj.width,
 			  	imgHeight = imgObj.height,
-			  	clientWidth = global.innerWidth,
-				clientHeight = global.innerHeight,				
+			  	clientWidth = this.deviceSize.width,
+				clientHeight = this.deviceSize.height,				
 			 	rateWidth = clientWidth / imgWidth,
 			 	rateHeight = clientHeight / imgHeight,
 			 	rate = rateWidth < rateHeight ? rateWidth : rateHeight;
@@ -406,9 +417,9 @@
 		log: function() {
 			this.context.font = '14px verdana'
 			this.context.fillStyle = '#FFF'
-			this.context.fillText('orientation: ' + global.orientation, 10, 20)
+			this.context.fillText('orientation: ' + this.orientation, 10, 20)
 			this.context.fillText('scale: ' + this.imgSize.width/this.img.width, 10, 36)
-			this.context.fillText('rotate: ' + this.angle, 10, 52)			
+			this.context.fillText('rotate: ' + this.angle, 10, 52)		
 		}
  	}
  	global.ImgClip = ImgClip
