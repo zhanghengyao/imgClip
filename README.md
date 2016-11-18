@@ -1,5 +1,5 @@
 # imgClip
-移动端图片剪裁<br/><br/>
+移动端图片剪裁,支持旋转，放大，缩小。<br/><br/>
 <img src="https://zhanghengyao.github.io/imgClip/src/img/demo.jpg" width="40%">
 <br/>
 ----------
